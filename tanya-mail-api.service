@@ -1,0 +1,33 @@
+[Unit]
+Description=Tanya Mail API Service with Gunicorn
+After=network.target
+Wants=network.target
+
+[Service]
+Type=notify
+# Path ke direktori aplikasi
+WorkingDirectory=/workspaces/tanya-mail
+# Path ke executable Python di virtual environment
+ExecStart=/workspaces/tanya-mail/.venv/bin/gunicorn api:app -c gunicorn_config.py
+ExecReload=/bin/kill -s HUP $MAINPID
+# User dan group untuk menjalankan service (sesuaikan dengan user Anda)
+User=codespace
+Group=codespace
+# Environment variables
+Environment=PATH="/workspaces/tanya-mail/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+EnvironmentFile=/workspaces/tanya-mail/.env
+# Restart policy
+Restart=always
+RestartSec=3
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tanya-mail-api
+# Process management
+KillMode=mixed
+TimeoutStopSec=30
+# File descriptor limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
