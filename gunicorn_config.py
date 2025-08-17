@@ -1,6 +1,14 @@
 import multiprocessing
+import os
+from dotenv import load_dotenv
 
-bind = "0.0.0.0:8000"
+# Load environment variables
+load_dotenv()
+
+# Get port from environment or default to 8000
+PORT = os.getenv("PORT", "8000")
+bind = f"0.0.0.0:{PORT}"
+
 workers = multiprocessing.cpu_count() * 2 + 1
 worker_class = "uvicorn.workers.UvicornWorker"
 loglevel = "info"
