@@ -7,7 +7,9 @@ set -e
 
 # Configuration
 APP_NAME="tanya-mail-api"
-APP_DIR="/workspaces/tanya-mail"
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="$SCRIPT_DIR"
 PID_FILE="/tmp/${APP_NAME}.pid"
 LOG_FILE="$APP_DIR/logs/daemon.log"
 
@@ -180,8 +182,8 @@ show_status() {
 test_api() {
     log_info "Testing API health..."
     
-    # Get port from .env
-    local port=$(grep "^PORT=" .env | cut -d'=' -f2 2>/dev/null || echo "8804")
+    # Get port from .env in app directory
+    local port=$(grep "^PORT=" "$APP_DIR/.env" | cut -d'=' -f2 2>/dev/null || echo "8804")
     
     local response=$(curl -s -w "\n%{http_code}" "http://localhost:$port/health" -H "Content-Type: application/json" 2>/dev/null || echo -e "\nERROR")
     local http_code=$(echo "$response" | tail -n1)

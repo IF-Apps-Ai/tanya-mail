@@ -7,7 +7,9 @@ set -e  # Exit on any error
 
 # Configuration
 APP_NAME="tanya-mail-api"
-APP_DIR="/workspaces/tanya-mail"
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="$SCRIPT_DIR"
 SERVICE_USER="codespace"
 VENV_DIR="$APP_DIR/.venv"
 

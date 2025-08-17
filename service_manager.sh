@@ -44,13 +44,23 @@ check_root() {
 install_service() {
     print_status "Installing Tanya Mail API Service..."
     
-    # Check if service file exists
-    if [ ! -f "$SERVICE_FILE" ]; then
-        print_error "Service file '$SERVICE_FILE' not found in current directory!"
+    # Get current directory and user
+    local app_dir=$(pwd)
+    local current_user=$(whoami)
+    
+    # Check if template exists
+    if [ ! -f "${SERVICE_FILE}.template" ]; then
+        print_error "Service template file '${SERVICE_FILE}.template' not found in current directory!"
         exit 1
     fi
     
     check_root
+    
+    # Generate service file from template
+    print_info "Generating service file for current directory: $app_dir"
+    sed -e "s|{{APP_DIR}}|$app_dir|g" \
+        -e "s|{{USER}}|$current_user|g" \
+        "${SERVICE_FILE}.template" > "$SERVICE_FILE"
     
     # Copy service file to systemd directory
     cp "$SERVICE_FILE" "$SYSTEMD_DIR/"
