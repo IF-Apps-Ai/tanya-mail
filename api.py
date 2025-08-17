@@ -180,19 +180,20 @@ collection = db[COLLECTION_NAME]
 
 # === Session Manager ===
 
+
 class SessionManager:
     """Manages multiple user sessions"""
-    
+
     def __init__(self):
         self.sessions: Dict[str, 'ConversationManager'] = {}
         self.session_timeout = 3600  # 1 hour in seconds
         self.last_activity: Dict[str, datetime] = {}
-    
+
     def get_or_create_session(self, session_id: Optional[str] = None) -> tuple[str, 'ConversationManager']:
         """Get existing session or create new one"""
         # Clean up old sessions
         self._cleanup_old_sessions()
-        
+
         # If no session_id provided or session doesn't exist, create new
         if not session_id or session_id not in self.sessions:
             session_id = str(uuid.uuid4())
@@ -201,16 +202,16 @@ class SessionManager:
         else:
             # Update last activity
             self.last_activity[session_id] = datetime.now()
-        
+
         return session_id, self.sessions[session_id]
-    
+
     def get_session(self, session_id: str) -> Optional['ConversationManager']:
         """Get existing session"""
         if session_id in self.sessions:
             self.last_activity[session_id] = datetime.now()
             return self.sessions[session_id]
         return None
-    
+
     def delete_session(self, session_id: str) -> bool:
         """Delete a session"""
         if session_id in self.sessions:
@@ -219,16 +220,16 @@ class SessionManager:
                 del self.last_activity[session_id]
             return True
         return False
-    
+
     def _cleanup_old_sessions(self):
         """Remove sessions that have been inactive"""
         current_time = datetime.now()
         sessions_to_remove = []
-        
+
         for session_id, last_time in self.last_activity.items():
             if (current_time - last_time).total_seconds() > self.session_timeout:
                 sessions_to_remove.append(session_id)
-        
+
         for session_id in sessions_to_remove:
             self.delete_session(session_id)
 
@@ -584,9 +585,10 @@ async def ask_question(request: QuestionRequest):
         top_k = request.top_k
         filename_filter = request.filename_filter
         stream = request.stream
-        
+
         # Get or create session
-        session_id, conversation_manager = session_manager.get_or_create_session(request.session_id)
+        session_id, conversation_manager = session_manager.get_or_create_session(
+            request.session_id)
 
         # Get conversation context
         conversation_context = conversation_manager.get_conversation_context()
@@ -675,7 +677,7 @@ async def ask_question(request: QuestionRequest):
                 try:
                     # Send session_id first
                     yield f"{json.dumps({'session_id': session_id, 'type': 'session'})}\n\n"
-                    
+
                     response_stream = client_openai.chat.completions.create(
                         model=MODEL_NAME,
                         messages=[{"role": "user", "content": full_prompt}],
@@ -814,7 +816,7 @@ async def get_conversation_history(session_id: str):
     conversation_manager = session_manager.get_session(session_id)
     if not conversation_manager:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     return ConversationHistory(
         session_id=session_id,
         history=conversation_manager.conversation_history,
@@ -842,12 +844,13 @@ async def configure_conversation(session_id: str, request: ConversationContextRe
         conversation_manager = session_manager.get_session(session_id)
         if not conversation_manager:
             raise HTTPException(status_code=404, detail="Session not found")
-            
+
         conversation_manager.context_window = request.context_window
         return APIResponse(
             status="success",
             message=f"Conversation context window set to {request.context_window}",
-            data={"context_window": request.context_window, "session_id": session_id}
+            data={"context_window": request.context_window,
+                  "session_id": session_id}
         )
     except Exception as e:
         raise HTTPException(
@@ -861,7 +864,7 @@ async def export_conversation(session_id: str):
         conversation_manager = session_manager.get_session(session_id)
         if not conversation_manager:
             raise HTTPException(status_code=404, detail="Session not found")
-            
+
         filename = f"conversation_{session_id}.json"
         filepath = f"/tmp/{filename}"
 
@@ -894,7 +897,7 @@ async def list_sessions():
             "last_activity": last_activity.isoformat(),
             "total_exchanges": len(conv_manager.conversation_history)
         })
-    
+
     return APIResponse(
         status="success",
         message=f"Found {len(sessions_info)} active sessions",
