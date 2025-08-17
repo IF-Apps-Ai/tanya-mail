@@ -1,0 +1,664 @@
+{
+  "info": {
+    "name": "Tanya Ma'il API",
+    "description": "RAG (Retrieval-Augmented Generation) system for PDF documents with multi-user session support and real-time streaming",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user1SessionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user2SessionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "filename",
+      "value": "PMB - Info.pdf",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Root - API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "File Management",
+      "item": [
+        {
+          "name": "Upload PDF File",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["upload"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Files",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/files",
+              "host": ["{{baseUrl}}"],
+              "path": ["files"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete File",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/files/{{filename}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["files", "{{filename}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Vector Store",
+      "item": [
+        {
+          "name": "Build Vector Store",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/build-vectorstore",
+              "host": ["{{baseUrl}}"],
+              "path": ["build-vectorstore"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Question & Answer",
+      "item": [
+        {
+          "name": "Ask Question (Create Session)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Apa itu PMB dan syarat pendaftarannya?\",\n  \"top_k\": 3,\n  \"stream\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.session_id) {",
+                  "        pm.collectionVariables.set('sessionId', response.session_id);",
+                  "        console.log('Session ID saved:', response.session_id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ask Question with Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Jelaskan lebih detail tentang biaya kuliah\",\n  \"top_k\": 3,\n  \"session_id\": \"{{sessionId}}\",\n  \"stream\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ask Question with Streaming",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "text/event-stream"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Bagaimana cara mendaftar PMB?\",\n  \"top_k\": 3,\n  \"session_id\": \"{{sessionId}}\",\n  \"stream\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ask Question with File Filter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Jelaskan tentang machine learning\",\n  \"top_k\": 5,\n  \"filename_filter\": \"ml-guide.pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/search?query=machine learning&top_k=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "machine learning"
+                },
+                {
+                  "key": "top_k",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Documents with File Filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/search?query=artificial intelligence&top_k=3&filename_filter=ai-guide.pdf",
+              "host": ["{{baseUrl}}"],
+              "path": ["search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "artificial intelligence"
+                },
+                {
+                  "key": "top_k",
+                  "value": "3"
+                },
+                {
+                  "key": "filename_filter",
+                  "value": "ai-guide.pdf"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Conversation Management",
+      "item": [
+        {
+          "name": "Get Conversation History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversation/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversation", "history"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Clear Conversation History",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversation/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversation", "history"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Configure Conversation Context",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context_window\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/conversation/config",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversation", "config"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export Conversation History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversation/export",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversation", "export"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sample Multi-turn Conversation",
+      "item": [
+        {
+          "name": "1. First Question - What is AI?",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Apa itu artificial intelligence?\",\n  \"top_k\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Follow-up - Types of AI",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Jelaskan lebih detail tentang jenis-jenis AI\",\n  \"top_k\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Follow-up - AI Applications",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Berikan contoh aplikasi AI dalam kehidupan sehari-hari\",\n  \"top_k\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Check Conversation History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversation/history/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversation", "history", "{{sessionId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Session Management",
+      "item": [
+        {
+          "name": "Get Conversation History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversation/history/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversation", "history", "{{sessionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Active Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Clear Session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversation/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversation", "{{sessionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Session Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/session/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["session", "{{sessionId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Multi-User Session Demo",
+      "item": [
+        {
+          "name": "User 1 - First Question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Apa itu PMB dan syarat pendaftarannya?\",\n  \"top_k\": 3,\n  \"stream\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.session_id) {",
+                  "        pm.collectionVariables.set('user1SessionId', response.session_id);",
+                  "        console.log('User 1 Session ID saved:', response.session_id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "User 2 - First Question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Bagaimana cara mendaftar kuliah?\",\n  \"top_k\": 3,\n  \"stream\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.session_id) {",
+                  "        pm.collectionVariables.set('user2SessionId', response.session_id);",
+                  "        console.log('User 2 Session ID saved:', response.session_id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "User 1 - Follow-up Question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Berapa biaya pendaftarannya?\",\n  \"top_k\": 3,\n  \"session_id\": \"{{user1SessionId}}\",\n  \"stream\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "User 2 - Follow-up Question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Apa saja jurusan yang tersedia?\",\n  \"top_k\": 3,\n  \"session_id\": \"{{user2SessionId}}\",\n  \"stream\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["ask"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check User 1 History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversation/history/{{user1SessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversation", "history", "{{user1SessionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check User 2 History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/conversation/history/{{user2SessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["conversation", "history", "{{user2SessionId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

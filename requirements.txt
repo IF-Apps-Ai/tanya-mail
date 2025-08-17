@@ -1,0 +1,29 @@
+# Core RAG dependencies
+openai>=1.0.0
+pymongo>=4.0.0
+langchain>=0.1.0
+langchain-openai>=0.1.0
+langchain-chroma>=0.1.0
+python-dotenv>=1.0.0
+chromadb>=0.4.0
+
+# PDF processing requirements
+PyPDF2>=3.0.0
+PyMuPDF>=1.23.0
+langchain-text-splitters>=0.0.1
+
+# PDF creation (optional)
+reportlab>=4.0.0
+
+# FastAPI dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+pydantic>=2.0.0
+
+# Streaming support
+sse-starlette>=1.8.0
+
+# Client dependencies
+requests>=2.31.0
+pytz>=2023.3

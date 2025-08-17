@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: tanya-mail-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: tanya_mail
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - tanya-mail-network
+
+  tanya-mail-api:
+    build: .
+    container_name: tanya-mail-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://admin:password123@mongodb:27017/tanya_mail?authSource=admin
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_BASE=${OPENAI_API_BASE:-https://api.openai.com/v1}
+      - MODEL_NAME=${MODEL_NAME:-gpt-4o-mini}
+      - MODEL_TEMPERATURE=${MODEL_TEMPERATURE:-0}
+      - MODEL_MAX_TOKENS=${MODEL_MAX_TOKENS:-2048}
+    volumes:
+      - ./pdf_documents:/app/pdf_documents
+      - ./chroma_pdf_db:/app/chroma_pdf_db
+    depends_on:
+      - mongodb
+    networks:
+      - tanya-mail-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  tanya-mail-network:
+    driver: bridge
