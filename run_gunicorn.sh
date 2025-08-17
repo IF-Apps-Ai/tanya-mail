@@ -2,7 +2,7 @@
 # Run Tanya Ma'il API with Gunicorn + UvicornWorker
 
 # Activate venv
-source venv/bin/activate
+source .venv/bin/activate
 
 # Create logs directory if not exists
 mkdir -p logs
