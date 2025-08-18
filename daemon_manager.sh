@@ -13,13 +13,16 @@ APP_DIR="$SCRIPT_DIR"
 # Get APP_NAME from .env file
 if [ -f "$APP_DIR/.env" ]; then
     DISPLAY_NAME=$(grep "^APP_NAME=" "$APP_DIR/.env" | cut -d'=' -f2 | tr -d '"' | tr -d "'")
-    DISPLAY_NAME=${DISPLAY_NAME:-"Tanya Mail"}
+    DISPLAY_NAME=${DISPLAY_NAME:-"Tanya AI"}
+    APP_NAME=$(grep "^APP_NAME=" "$APP_DIR/.env" | cut -d'=' -f2 | tr -d '"' | tr -d "'" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+    APP_NAME=${APP_NAME:-"tanya-ai"}-api
 else
-    DISPLAY_NAME="Tanya Mail"
+    DISPLAY_NAME="Tanya AI"
+    APP_NAME="tanya-ai-api"
 fi
 
-APP_NAME="tanya-mail-api"  # Keep service name consistent
-PID_FILE="/tmp/${APP_NAME}.pid"
+SERVICE_NAME="tanya-ai-api"  # Keep service name consistent for systemd
+PID_FILE="/tmp/${SERVICE_NAME}.pid"
 LOG_FILE="$APP_DIR/logs/daemon.log"
 
 # Colors
@@ -185,21 +188,24 @@ show_config() {
     fi
     echo ""
 }
+
+# Show daemon status
+show_status() {
     echo -e "${BLUE}📊 Daemon Status${NC}"
     echo "================"
     echo ""
     
     if is_running; then
-        local pid=$(get_pid)
+        pid=$(get_pid)
         echo -e "Status: ${GREEN}✅ Running${NC}"
         echo -e "PID: ${BLUE}$pid${NC}"
         
         # Get process info
-        local cpu_mem=$(ps -o %cpu,%mem -p "$pid" --no-headers 2>/dev/null || echo "N/A N/A")
+        cpu_mem=$(ps -o %cpu,%mem -p "$pid" --no-headers 2>/dev/null || echo "N/A N/A")
         echo -e "CPU/Memory: ${BLUE}$cpu_mem${NC}"
         
         # Get worker count
-        local workers=$(pgrep -f "gunicorn.*api:app" | wc -l)
+        workers=$(pgrep -f "gunicorn.*api:app" | wc -l)
         echo -e "Workers: ${BLUE}$workers${NC}"
         
     else
