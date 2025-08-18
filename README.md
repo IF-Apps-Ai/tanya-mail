@@ -735,6 +735,73 @@ python chat_streaming.py
 #   /exit    - Keluar dari chat
 ```
 
+### 5. Bulk PDF Processing 📄
+
+```bash
+# Upload dan proses multiple PDF sekaligus dari folder
+./process_bulk_pdf.sh
+
+# Preview file yang akan diproses tanpa memproses
+./process_bulk_pdf.sh --dry-run
+
+# Proses PDF dari folder custom
+./process_bulk_pdf.sh --folder documents
+
+# Force reprocess file yang sudah ada
+./process_bulk_pdf.sh --force
+
+# Load quick commands (opsional)
+source ./load_pdf_commands.sh
+bulk_pdf              # Proses semua PDF di pdf_input
+bulk_pdf_preview      # Preview mode
+bulk_pdf_force        # Force reprocess
+```
+
+**Fitur Bulk Processing:**
+
+- 🚀 **Batch Processing**: Proses multiple PDF sekaligus secara otomatis
+- 🔍 **Smart Detection**: Skip file yang sudah diproses (berdasarkan hash)
+- 📊 **Progress Tracking**: Real-time progress dan statistik processing
+- ⚡ **Resume Capability**: Dapat di-interrupt dan dilanjutkan kembali
+- 🔧 **Flexible**: Support folder custom, force reprocess, dan dry-run mode
+- 📋 **Detailed Logging**: Log comprehensive untuk debugging dan monitoring
+
+**Folder Structure:**
+```
+pdf_input/          # Tempatkan PDF yang akan diproses di sini
+pdf_documents/      # PDF yang sudah diproses disimpan di sini
+```
+
+**Example Output:**
+```bash
+🚀 TANYA MAIL - BULK PDF PROCESSOR
+============================================================
+[INFO] 🚀 Memulai bulk processing PDF dari folder: pdf_input
+[SUCCESS] ✅ Koneksi database berhasil  
+[INFO] 📊 Ditemukan 5 file PDF
+
+============================================================
+[1/5] document1.pdf
+============================================================
+[INFO] 📄 document1.pdf - Mulai memproses...
+[INFO] 📄 document1.pdf - Teks diekstrak (15420 karakter)
+[INFO] 📄 document1.pdf - Dibagi menjadi 8 chunk
+[SUCCESS] 📄 document1.pdf - Selesai diproses (8 chunk disimpan)
+
+============================================================
+📊 STATISTIK PROCESSING
+============================================================
+📁 Total file PDF: 5
+✅ Berhasil diproses: 5
+📋 Sudah diproses sebelumnya: 0  
+⏭️  Dilewati: 0
+❌ Gagal: 0
+📈 Success rate: 100.0%
+```
+
+Untuk dokumentasi lengkap bulk processing, lihat: **[README_BULK_PDF.md](README_BULK_PDF.md)**
+```
+
 ## 🧪 Testing Comprehensive
 
 ### 1. Automated API Testing

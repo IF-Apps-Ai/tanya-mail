@@ -1,5 +1,5 @@
 """
-Tanya Ma'il - RESTful API with Swagger Documentation and Streaming Support
+AI-Powered Document Analysis API - RESTful API with Swagger Documentation and Streaming Support
 RAG (Retrieval-Augmented Generation) system for PDF documents with conversation management
 """
 
@@ -124,15 +124,17 @@ class SystemStatus(BaseModel):
 
 
 # === Configuration ===
+APP_NAME = os.getenv("APP_NAME", "Tanya Ma'il")
+
 client_openai = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
     base_url=os.getenv("OPENAI_API_BASE")
 )
 
 MONGO_URI = os.getenv("MONGO_URI")
-MONGO_URI_LOCAL = "mongodb://localhost:27017"
-DB_NAME = "tanya_mail"
-COLLECTION_NAME = "pdf_docs"
+# MONGO_URI_LOCAL = "mongodb://localhost:27017"
+DB_NAME =   os.getenv("DB_NAME", "RAG_DB")
+COLLECTION_NAME =  os.getenv("COLLECTION_NAME", "pdf_docs")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
 MODEL_TEMPERATURE = float(os.getenv("MODEL_TEMPERATURE", "0"))
 MODEL_MAX_TOKENS = int(os.getenv("MODEL_MAX_TOKENS", "2048"))
@@ -383,8 +385,8 @@ def search_similar_documents(query: str, top_k: int = 3, filename_filter: str = 
 
 # === FastAPI App ===
 app = FastAPI(
-    title="Tanya Ma'il API",
-    description="RAG (Retrieval-Augmented Generation) system for PDF documents with conversation management",
+    title=f"{APP_NAME} API",
+    description=f"RAG (Retrieval-Augmented Generation) system for PDF documents with conversation management - {APP_NAME}",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -407,10 +409,11 @@ async def root():
     """Root endpoint - API information"""
     return APIResponse(
         status="success",
-        message="Tanya M'ail API is running",
+        message=f"{APP_NAME} API is running",
         data={
             "version": "1.0.0",
-            "description": "RAG system for PMB PDF documents",
+            "description": "RAG system for PDF documents",
+            "app_name": APP_NAME,
             "endpoints": {
                 "docs": "/docs",
                 "health": "/health",
@@ -910,7 +913,7 @@ async def list_sessions():
 @app.on_event("startup")
 async def startup_event():
     """Initialize application on startup"""
-    print("🚀 Tanya Ma'il API starting up...")
+    print(f"🚀 {APP_NAME} API starting up...")
 
     # Create PDF folder
     os.makedirs(PDF_FOLDER, exist_ok=True)
@@ -929,13 +932,13 @@ async def startup_event():
     else:
         print("⚠️ OpenAI API key not found")
 
-    print("🎉 Tanya Ma'il API ready!")
+    print(f"🎉 {APP_NAME} API ready!")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    print("🛑 Tanya Ma'il API shutting down...")
+    print(f"🛑 {APP_NAME} API shutting down...")
     if mongo_client:
         mongo_client.close()
         print("🔌 MongoDB connection closed")

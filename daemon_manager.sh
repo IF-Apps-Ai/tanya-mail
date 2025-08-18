@@ -1,15 +1,24 @@
 #!/bin/bash
 
-# Tanya Mail API Daemon Manager
+# AI Document Analysis API Daemon Manager
 # Alternative to systemd for containers/environments without systemd
 
 set -e
 
 # Configuration
-APP_NAME="tanya-mail-api"
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="$SCRIPT_DIR"
+
+# Get APP_NAME from .env file
+if [ -f "$APP_DIR/.env" ]; then
+    DISPLAY_NAME=$(grep "^APP_NAME=" "$APP_DIR/.env" | cut -d'=' -f2 | tr -d '"' | tr -d "'")
+    DISPLAY_NAME=${DISPLAY_NAME:-"Tanya Mail"}
+else
+    DISPLAY_NAME="Tanya Mail"
+fi
+
+APP_NAME="tanya-mail-api"  # Keep service name consistent
 PID_FILE="/tmp/${APP_NAME}.pid"
 LOG_FILE="$APP_DIR/logs/daemon.log"
 
@@ -63,7 +72,7 @@ get_pid() {
 
 # Start daemon
 start_daemon() {
-    log_info "Starting Tanya Mail API daemon..."
+    log_info "Starting ${DISPLAY_NAME} API daemon..."
     
     if is_running; then
         log_warning "Daemon is already running (PID: $(get_pid))"
@@ -104,7 +113,7 @@ start_daemon() {
 
 # Stop daemon
 stop_daemon() {
-    log_info "Stopping Tanya Mail API daemon..."
+    log_info "Stopping ${DISPLAY_NAME} API daemon..."
     
     if ! is_running; then
         log_warning "Daemon is not running"
@@ -141,14 +150,41 @@ stop_daemon() {
 
 # Restart daemon
 restart_daemon() {
-    log_info "Restarting Tanya Mail API daemon..."
+    log_info "Restarting ${DISPLAY_NAME} API daemon..."
     stop_daemon
     sleep 2
     start_daemon
 }
 
-# Show daemon status
-show_status() {
+# Show configuration
+show_config() {
+    echo -e "${BLUE}⚙️  Configuration${NC}"
+    echo "================"
+    echo ""
+    echo -e "App Directory: ${BLUE}$APP_DIR${NC}"
+    echo -e "PID File: ${BLUE}$PID_FILE${NC}"
+    echo -e "Log File: ${BLUE}$LOG_FILE${NC}"
+    echo ""
+    
+    if [ -f "$APP_DIR/.env" ]; then
+        echo -e "${BLUE}.env Configuration:${NC}"
+        echo "-------------------"
+        
+        # Show relevant config without secrets
+        grep -E "^(PORT|DB_NAME|MONGO_DATABASE|SESSION_COLLECTION|DOCS_COLLECTION)" "$APP_DIR/.env" | while IFS= read -r line; do
+            if [[ ! "$line" =~ ^(OPENAI_|MONGO_URI|SECRET) ]]; then
+                echo -e "  ${GREEN}$line${NC}"
+            fi
+        done
+        
+        local port=$(grep "^PORT=" "$APP_DIR/.env" | cut -d'=' -f2 | tr -d '"' | tr -d "'" 2>/dev/null || echo "8804")
+        echo ""
+        echo -e "Parsed Port: ${BLUE}$port${NC}"
+    else
+        log_error ".env file not found at $APP_DIR/.env"
+    fi
+    echo ""
+}
     echo -e "${BLUE}📊 Daemon Status${NC}"
     echo "================"
     echo ""
@@ -182,22 +218,38 @@ show_status() {
 test_api() {
     log_info "Testing API health..."
     
-    # Get port from .env in app directory
-    local port=$(grep "^PORT=" "$APP_DIR/.env" | cut -d'=' -f2 2>/dev/null || echo "8804")
+    # Get port from .env in app directory, remove quotes if present
+    local port=$(grep "^PORT=" "$APP_DIR/.env" | cut -d'=' -f2 | tr -d '"' | tr -d "'" 2>/dev/null || echo "8804")
+    port=${port:-8804}  # Default fallback
     
-    local response=$(curl -s -w "\n%{http_code}" "http://localhost:$port/health" -H "Content-Type: application/json" 2>/dev/null || echo -e "\nERROR")
-    local http_code=$(echo "$response" | tail -n1)
-    local content=$(echo "$response" | head -n -1)
+    log_info "Testing on port: $port"
     
-    if [ "$http_code" = "200" ]; then
-        log_success "✅ API is healthy (Port: $port)"
-        echo -e "${GREEN}Response:${NC} $content"
-    else
-        log_error "❌ API test failed (Port: $port)"
-        if [ "$http_code" != "ERROR" ] && [ ! -z "$content" ]; then
-            echo -e "${RED}HTTP Code:${NC} $http_code"
-            echo -e "${RED}Response:${NC} $content"
+    # Try multiple endpoints for testing
+    local endpoints=("health" "docs" "")
+    local success=false
+    
+    for endpoint in "${endpoints[@]}"; do
+        local url="http://localhost:$port/$endpoint"
+        log_info "Trying: $url"
+        
+        local response=$(curl -s -w "\n%{http_code}" "$url" -H "Content-Type: application/json" 2>/dev/null || echo -e "\nERROR")
+        local http_code=$(echo "$response" | tail -n1)
+        local content=$(echo "$response" | head -n -1)
+        
+        if [ "$http_code" = "200" ]; then
+            log_success "✅ API is healthy (Port: $port, Endpoint: /$endpoint)"
+            echo -e "${GREEN}Response:${NC} $content"
+            success=true
+            break
+        elif [ "$http_code" != "ERROR" ] && [[ "$http_code" =~ ^[0-9]+$ ]]; then
+            log_warning "⚠️  Got HTTP $http_code for /$endpoint"
         fi
+    done
+    
+    if [ "$success" = false ]; then
+        log_error "❌ API test failed on all endpoints (Port: $port)"
+        log_info "💡 If running behind nginx, the API might be accessible via reverse proxy only"
+        log_info "💡 Check nginx configuration and internal port mapping"
     fi
 }
 
@@ -229,7 +281,7 @@ follow_logs() {
 
 # Show help
 show_help() {
-    echo -e "${BLUE}Tanya Mail API Daemon Manager${NC}"
+    echo -e "${BLUE}${DISPLAY_NAME} API Daemon Manager${NC}"
     echo ""
     echo "Usage: $0 [COMMAND] [OPTIONS]"
     echo ""
@@ -239,6 +291,7 @@ show_help() {
     echo "  restart   - Restart the daemon"
     echo "  status    - Show daemon status"
     echo "  test      - Test API health"
+    echo "  config    - Show configuration"
     echo "  logs [N]  - Show last N log lines (default: 50)"
     echo "  follow    - Follow logs in real-time"
     echo "  help      - Show this help message"
@@ -271,6 +324,9 @@ case "${1:-help}" in
         ;;
     test)
         test_api
+        ;;
+    config)
+        show_config
         ;;
     logs)
         show_logs "${2:-50}"
