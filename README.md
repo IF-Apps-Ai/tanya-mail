@@ -1,63 +1,139 @@
-# Tanya Ma'il - Advanced RAG PDF System 🤖📚
+# Tanya Ma'il - Advanced LangChain-Powered RAG PDF System 🤖📚
 
-Tanya Ma'il adalah sistem RAG (Retrieval-Augmented Generation) yang canggih untuk menganalisis dokumen PDF menggunakan teknologi AI terdepan. Sistem ini mendukung multi-user sessions, real-time streaming, dan berbagai metode interaksi yang fleksibel.
+Tanya Ma'il adalah sistem RAG (Retrieval-Augmented Generation) yang canggih untuk menganalisis dokumen PDF menggunakan **LangChain framework** dan teknologi AI terdepan. Sistem ini mendukung multi-user sessions, real-time streaming, dan berbagai metode interaksi yang fleksibel dengan arsitektur LangChain yang modular.
 
 ## 🌟 Features Utama
 
+- 🦜 **LangChain Framework 0.3+**: Arsitektur RAG yang robust dengan LangChain chains
 - 👥 **Multi-User Sessions**: Dukungan sesi terpisah untuk multiple users concurrent
-- 📄 **PDF Processing**: Upload dan ekstraksi teks cerdas dari dokumen PDF
-- 🔍 **Semantic Search**: Pencarian semantik menggunakan embeddings OpenAI ada-002
-- 💬 **Context-Aware Conversation**: Chat dengan memory dan konteks percakapan
-- ⚡ **Real-time Streaming**: Respons streaming dengan Server-Sent Events (SSE)
-- 🤖 **AI-powered Q&A**: Jawaban cerdas menggunakan GPT-4o-mini
-- 📊 **Vector Database**: ChromaDB untuk penyimpanan dan retrieval embeddings
-- 🗄️ **MongoDB Integration**: Metadata, conversation, dan session storage
+- 📄 **Smart PDF Processing**: Upload dan ekstraksi teks cerdas menggunakan LangChain document loaders
+- 🔍 **Vector Search**: Pencarian semantik dengan LangChain ChromaDB integration
+- 💬 **Memory-Aware Chat**: Conversation dengan LangChain ConversationBufferWindowMemory
+- ⚡ **Streaming Responses**: Real-time streaming dengan LangChain AsyncCallbackHandler
+- 🤖 **AI-powered Q&A**: LangChain ChatOpenAI dengan custom RAG chains
+- 📊 **Vector Database**: ChromaDB dengan LangChain Chroma vectorstore
+- 🗄️ **MongoDB Integration**: Metadata dan session storage terintegrasi
 - 🌐 **Timezone Support**: Deteksi otomatis timezone Indonesia (WIB/WITA/WIT)
 - 🐳 **Docker Support**: Deployment mudah dengan Docker Compose
 - 📖 **Interactive API Docs**: Swagger/OpenAPI documentation
 - 🔄 **Session Management**: Automatic cleanup dan session lifecycle management
 
+## 🦜 LangChain-Powered Architecture
+
+Tanya Ma'il dibangun menggunakan **LangChain framework 0.3+** dengan `SimpleLangChainRAG` system yang komprehensif:
+
+### 🔗 Core LangChain Components
+- **ChatOpenAI**: LLM integration dengan streaming support
+- **OpenAIEmbeddings**: text-embedding-3-small untuk vector generation
+- **Chroma**: Vector database dengan LangChain integration
+- **RecursiveCharacterTextSplitter**: Intelligent document chunking
+- **ConversationBufferWindowMemory**: Session-based conversation memory
+- **AsyncCallbackHandler**: Custom streaming handler untuk real-time responses
+
+### 🧠 SimpleLangChainRAG System
+- **RAG Chain Processing**: Context-aware question answering dengan document retrieval
+- **Memory Management**: ConversationBufferWindowMemory dengan k=5 untuk setiap session
+- **Document Enhancement**: MongoDB metadata integration dengan vector search
+- **Streaming Support**: AsyncCallbackHandler untuk real-time token streaming
+- **Session Isolation**: Terpisah memory dan context untuk setiap user session
+
+### 📚 Document Processing Pipeline
+- **Text Splitting**: RecursiveCharacterTextSplitter (chunk_size=1000, overlap=200)
+- **Vector Generation**: OpenAI text-embedding-3-small embeddings
+- **Metadata Preservation**: File info, upload dates, chunk indices
+- **Dynamic Addition**: Real-time document addition ke vectorstore
+
+### 🔍 Advanced RAG Features
+- **Enhanced Search**: Similarity search dengan MongoDB metadata enhancement
+- **Source Attribution**: Automatic citation dari dokumen yang digunakan
+- **Context Management**: Smart context formatting dengan chat history
+- **Error Handling**: Comprehensive error handling dengan graceful fallbacks
+- **Conversation Export**: JSON export functionality untuk chat history
+
+### 🎯 Streaming Architecture
+- **SimpleStreamingHandler**: Custom LangChain AsyncCallbackHandler
+- **Token-by-Token**: Real-time response streaming via AsyncQueue
+- **Error Streaming**: Error messages juga di-stream ke client
+- **State Management**: Proper streaming state management dan cleanup
+
 ## 🏗️ Arsitektur Sistem
 
-### Core Components
+### LangChain-Powered RAG Architecture
 
-#### 1. **SessionManager** (`api.py`)
-- **Fungsi**: Mengelola sesi multi-user dengan isolasi percakapan
-- **Metode**:
-  - `create_session()`: Membuat sesi baru dengan UUID
-  - `get_session()`: Mengambil sesi berdasarkan ID
-  - `cleanup_expired_sessions()`: Pembersihan otomatis sesi expired
-  - `get_active_sessions()`: Daftar sesi aktif
-  - `delete_session()`: Menghapus sesi dan historynya
+#### 1. **SimpleLangChainRAG System** (`simple_langchain.py`)
 
-#### 2. **ConversationManager** (`api.py`)
-- **Fungsi**: Mengelola percakapan dan konteks per sesi
-- **Metode**:
-  - `add_to_history()`: Menyimpan percakapan ke history
-  - `get_history()`: Mengambil riwayat percakapan
-  - `clear_history()`: Membersihkan history percakapan
-  - `export_history()`: Export percakapan dalam format JSON
-
-#### 3. **PDF Processing Engine**
-- **Library**: PyPDF2, LangChain Document Loaders
-- **Metode**:
-  - Text extraction dari PDF files
-  - Document chunking dengan overlap
-  - Metadata extraction (filename, page numbers)
-
-#### 4. **Vector Database (ChromaDB)**
-- **Embedding Model**: OpenAI text-embedding-ada-002
-- **Metode**:
-  - `build_vectorstore()`: Membangun database vektor dari dokumen
-  - `similarity_search()`: Pencarian berdasarkan similarity
-  - `add_documents()`: Menambah dokumen baru ke database
-
-#### 5. **LLM Integration (OpenAI)**
-- **Model**: GPT-4o-mini (configurable)
+- **Fungsi**: Core RAG system menggunakan LangChain framework dengan arsitektur modular
+- **Components**:
+  - `ChatOpenAI`: LLM integration dengan streaming support (GPT-4o-mini)
+  - `OpenAIEmbeddings`: text-embedding-3-small untuk vector generation  
+  - `Chroma`: Vector database dengan persist directory
+  - `RecursiveCharacterTextSplitter`: Smart chunking (1000 chars, 200 overlap)
+  - `ConversationBufferWindowMemory`: Session memory management (k=5)
+  - `ChatPromptTemplate`: System prompt dengan context dan chat history
 - **Features**:
-  - Context-aware responses
-  - Streaming responses dengan SSE
-  - Temperature control untuk konsistensi
+  - Document search dengan enhanced MongoDB metadata
+  - Streaming responses dengan AsyncCallbackHandler
+  - Session-based conversation memory dan history management
+  - Smart context formatting dengan citation support
+
+#### 2. **LangChain API Integration** (`api_langchain.py`)
+
+- **Fungsi**: FastAPI application dengan SimpleLangChainRAG integration
+- **Endpoints**:
+  - `/chat/ask`: Question answering dengan memory dan context
+  - `/chat/ask-stream`: Real-time streaming responses
+  - `/chat/conversation/history`: Conversation history management
+  - `/chat/conversation/export`: JSON export functionality
+  - `/chat/conversation/clear`: Clear session memory
+- **SessionManager**: Multi-user session isolation dengan UUID-based sessions
+- **ConversationManager**: MongoDB-based conversation persistence
+- **Features**:
+  - Session cleanup dan lifecycle management
+  - Real-time streaming dengan Server-Sent Events
+  - Enhanced document search dengan metadata integration
+
+#### 3. **SimpleStreamingHandler** (`simple_langchain.py`)
+
+- **Fungsi**: Custom LangChain AsyncCallbackHandler untuk streaming responses
+- **Components**:
+  - `asyncio.Queue`: Token buffering untuk smooth streaming
+  - `on_llm_new_token()`: Real-time token handling
+  - `on_llm_end()`: Stream completion management
+  - `on_llm_error()`: Error streaming dengan graceful handling
+- **Features**:
+  - Token-by-token streaming untuk responsive user experience
+  - Proper state management dan cleanup
+  - Error handling dengan informative messages
+
+#### 4. **Document Processing Pipeline**
+
+- **LangChain Components**:
+  - `RecursiveCharacterTextSplitter`: Intelligent text chunking dengan overlap
+  - `OpenAIEmbeddings`: Vector generation dengan text-embedding-3-small
+  - `Chroma.from_texts()`: Dynamic vectorstore creation dan addition
+- **MongoDB Integration**:
+  - Enhanced metadata storage (upload_date, file_hash, chunk_id, kategori)
+  - Document search dengan aggregation pipeline
+  - File listing dengan chunk counting dan upload tracking
+
+#### 5. **Vector Database (ChromaDB + LangChain)**
+
+- **Integration**: LangChain Chroma vectorstore dengan persist directory
+- **Embedding Model**: OpenAI text-embedding-3-small
+- **Features**:
+  - `similarity_search()`: K-nearest neighbor search dengan metadata
+  - `add_texts()`: Dynamic document addition dengan metadata
+  - Enhanced search dengan MongoDB metadata integration
+  - Automatic vectorstore creation dan persistence
+
+#### 6. **LLM Integration (ChatOpenAI)**
+
+- **Model**: GPT-4o-mini (configurable via environment variables)
+- **LangChain Features**:
+  - Streaming responses dengan `astream()` method
+  - Temperature control dan token limits
+  - System prompt engineering dengan context injection
+  - Conversation memory integration dengan chat history formatting
 
 ### Database Schema
 
@@ -101,8 +177,17 @@ docker-compose up -d
 ### Option 2: Manual Setup
 
 ```bash
-# 1. Install dependencies
+# 1. Install dependencies (includes LangChain framework)
 pip install -r requirements.txt
+
+# Dependencies yang diinstall termasuk:
+# - langchain>=0.3.0 (Core LangChain framework)
+# - langchain-core>=0.3.0 (LangChain core components)
+# - langchain-openai>=0.3.0 (OpenAI LLM integration)  
+# - langchain-chroma>=0.2.0 (ChromaDB vector store)
+# - langchain-text-splitters>=0.3.0 (Document text splitters)
+# - langchain-community>=0.3.0 (Community integrations)
+# - Semua dependencies lainnya untuk FastAPI, ChromaDB, MongoDB
 
 # 2. Setup environment
 cp .env.template .env
@@ -114,10 +199,16 @@ docker run -d -p 27017:27017 --name mongodb \
   -e MONGO_INITDB_ROOT_PASSWORD=password123 \
   mongo
 
-# 4. Run API server
+# 4. Run API server (with LangChain integration)
+# Option A: Original implementation
 python api.py
-# Atau dengan auto-reload:
-uvicorn api:app --reload --host 0.0.0.0 --port 8000
+
+# Option B: LangChain implementation (RECOMMENDED)
+python api_langchain.py
+
+# Option C: Auto-reload development
+# For LangChain version:
+uvicorn api_langchain:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Option 3: Production Service dengan Clustering (Recommended for Production)
@@ -317,6 +408,7 @@ CORS_ORIGINS=["*"]           # Configure CORS for production
 tanya-mail/
 ├── 📄 Core Application Files
 │   ├── api.py                     # Main FastAPI application dengan SessionManager
+│   ├── langchain_rag.py           # LangChain RAG system dengan chains dan memory
 │   ├── chat_streaming.py          # Interactive streaming chat client
 │   ├── client_streaming.py        # Python API client dengan streaming support
 │   └── run_streaming_api.py       # Simple API server runner
@@ -395,6 +487,59 @@ tanya-mail/
 | `/search` | GET | Pencarian semantik langsung |
 | `/conversation/export/{session_id}` | GET | Export percakapan ke JSON |
 
+## 🦜 LangChain API Implementation
+
+Tanya Ma'il menyediakan dua implementasi API:
+
+### 1. **api_langchain.py** (RECOMMENDED) - Full LangChain Implementation
+
+**Features:**
+- ✅ **SimpleLangChainRAG**: Complete RAG system dengan LangChain framework
+- ✅ **Streaming Support**: Real-time streaming dengan `SimpleStreamingHandler`
+- ✅ **Memory Management**: `ConversationBufferWindowMemory` untuk setiap session
+- ✅ **Enhanced Search**: MongoDB metadata integration dengan vector search
+- ✅ **Smart Context**: Automatic context formatting dengan chat history
+- ✅ **Error Handling**: Comprehensive error handling dan graceful fallbacks
+
+**Usage:**
+```bash
+# Start LangChain implementation
+python api_langchain.py
+
+# Atau development mode:
+uvicorn api_langchain:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Endpoints** (LangChain):
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/chat/ask` | POST | Question answering dengan LangChain RAG |
+| `/chat/ask-stream` | POST | Streaming responses dengan AsyncCallbackHandler |
+| `/chat/conversation/history/{session_id}` | GET | Conversation history dari memory |
+| `/chat/conversation/export/{session_id}` | GET | Export conversation dengan timestamp |
+| `/chat/conversation/clear/{session_id}` | POST | Clear conversation memory |
+
+### 2. **api.py** - Original Implementation
+
+- Direct OpenAI integration tanpa LangChain
+- Basic RAG functionality
+- Standard session management
+
+**Usage:**
+```bash
+# Start original implementation  
+python api.py
+```
+
+### Recommended Usage: api_langchain.py
+
+Untuk development dan production, **api_langchain.py** recommended karena:
+- More robust RAG implementation dengan LangChain framework
+- Better memory management dan conversation handling
+- Enhanced streaming capabilities dengan AsyncCallbackHandler  
+- Modular architecture yang mudah di-extend
+- Smart context management dengan chat history
+
 ## 💡 Metode Penggunaan
 
 ### 1. API Usage dengan Python
@@ -443,7 +588,53 @@ for chat in history["history"]:
     print(f"A: {chat['response'][:100]}...")
 ```
 
-### 2. Production Service dengan Load Testing
+### 2. LangChain Integration Examples
+
+Tanya Ma'il menggunakan LangChain untuk operasi RAG yang lebih canggih:
+
+```python
+# Direct LangChain usage (internal)
+from langchain_rag import LangChainRAG
+
+# Initialize LangChain RAG system
+rag_system = LangChainRAG()
+
+# Different chain types untuk berbagai use cases
+# 1. Conversational retrieval dengan memory
+response = rag_system.conversational_retrieval_chain(
+    question="Apa topik utama dokumen?",
+    session_id="user_123"
+)
+
+# 2. Simple Q&A dari vector store
+response = rag_system.qa_chain(
+    question="Berapa total anggaran proyek?",
+    session_id="user_123"
+)
+
+# 3. Basic LLM response tanpa retrieval
+response = rag_system.simple_chain(
+    question="Jelaskan konsep machine learning",
+    session_id="user_123"
+)
+
+# Advanced: Streaming responses dengan LangChain
+async def stream_langchain_response():
+    async for chunk in rag_system.stream_conversational_retrieval(
+        question="Jelaskan detail implementasi",
+        session_id="user_123"
+    ):
+        yield f"data: {json.dumps({'content': chunk})}\n\n"
+```
+
+**LangChain Chain Features:**
+- ✅ **ConversationBufferMemory**: Auto-managed conversation context
+- 🔍 **Retrieval Integration**: Seamless vector store queries
+- 📚 **Source Citation**: Automatic source document references
+- 🎯 **Configurable Parameters**: Custom search strategies and temperatures
+- 🔄 **Chain Composition**: Multiple chains untuk different scenarios
+
+### 3. Production Service dengan Load Testing
 
 ```python
 import requests
@@ -1100,11 +1291,34 @@ async def log_requests(request: Request, call_next):
 - 🔧 **Development**: Check GitHub Projects
 - 📧 **Contact**: [Your contact information]
 
-### External Dependencies
-- 🤖 **OpenAI**: https://platform.openai.com/docs
-- 📊 **ChromaDB**: https://docs.trychroma.com/
-- 🗄️ **MongoDB**: https://docs.mongodb.com/
-- ⚡ **FastAPI**: https://fastapi.tiangolo.com/
+### External Dependencies & Technologies
+
+**🔗 LangChain Framework:**
+- � **LangChain Core**: https://python.langchain.com/ - Framework untuk aplikasi LLM
+- �🤖 **LangChain OpenAI**: https://python.langchain.com/docs/integrations/llms/openai - OpenAI integration
+- 📊 **LangChain Chroma**: https://python.langchain.com/docs/integrations/vectorstores/chroma - ChromaDB vector store
+- 📚 **LangChain Community**: https://python.langchain.com/docs/integrations/document_loaders - Document loaders & utilities
+
+**🌟 Core Technologies:**
+- 🤖 **OpenAI API**: https://platform.openai.com/docs - LLM dan embeddings
+- 📊 **ChromaDB**: https://docs.trychroma.com/ - Vector database untuk semantic search  
+- 🗄️ **MongoDB**: https://docs.mongodb.com/ - Session dan metadata storage
+- ⚡ **FastAPI**: https://fastapi.tiangolo.com/ - Modern Python web framework
+- 🏭 **Gunicorn + Uvicorn**: Production ASGI server dengan clustering
+
+**📦 Key Python Packages:**
+```
+langchain>=0.3.0                # LangChain framework core
+langchain-openai>=0.3.0        # OpenAI LLM integration
+langchain-chroma>=0.2.0         # ChromaDB vector store
+langchain-community>=0.3.0      # Community components
+fastapi>=0.100.0               # Web framework
+uvicorn>=0.20.0                # ASGI server
+gunicorn>=21.0.0               # Production server
+chromadb>=0.4.15               # Vector database
+pymongo>=4.5.0                 # MongoDB client
+PyPDF2>=3.0.0                  # PDF processing
+```
 
 ---
 
@@ -1114,9 +1328,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**🚀 Happy coding dengan Tanya Ma'il!** Sistem RAG yang powerful untuk semua kebutuhan analisis dokumen PDF Anda! 
+**🚀 Happy coding dengan Tanya Ma'il!** Sistem RAG yang powerful untuk semua kebutuhan analisis dokumen PDF Anda!
 
-*Built with ❤️ using FastAPI, OpenAI, ChromaDB, and MongoDB*
+*Built with ❤️ using LangChain, FastAPI, OpenAI, ChromaDB, and MongoDB*
 
 ## 🧪 Testing
 

@@ -1,29 +1,54 @@
-# Core RAG dependencies
+# Core LangChain Framework (Required for api_langchain.py)
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-openai>=0.3.0
+langchain-chroma>=0.2.0
+langchain-text-splitters>=0.3.0
+langchain-community>=0.3.0
+
+# OpenAI Integration
 openai>=1.0.0
-pymongo>=4.0.0
-langchain>=0.1.0
-langchain-openai>=0.1.0
-langchain-chroma>=0.1.0
-python-dotenv>=1.0.0
+
+# Vector Database
 chromadb>=0.4.0
 
-# PDF processing requirements
+# Document Processing
 PyPDF2>=3.0.0
 PyMuPDF>=1.23.0
-langchain-text-splitters>=0.0.1
 
-# PDF creation (optional)
-reportlab>=4.0.0
+# Database
+pymongo>=4.0.0
 
-# FastAPI dependencies
+# Environment Configuration
+python-dotenv>=1.0.0
+
+# FastAPI Framework
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 python-multipart>=0.0.6
 pydantic>=2.0.0
 
-# Streaming support
+# Streaming Support
 sse-starlette>=1.8.0
 
-# Client dependencies
+# WSGI Server (Production)
+gunicorn>=21.2.0
+
+# Client Dependencies
 requests>=2.31.0
 pytz>=2023.3
+
+# PDF Creation (Optional)
+reportlab>=4.0.0
+
+# Additional Utilities
+typing-extensions>=4.5.0
+pydantic-core>=2.0.0
+
+# Logging and Monitoring
+structlog>=23.1.0
+
+# Development Dependencies (Optional)
+# pytest>=7.4.0
+# black>=23.0.0
+# flake8>=6.0.0
